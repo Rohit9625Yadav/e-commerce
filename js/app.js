@@ -24,6 +24,7 @@ const AppState = {
   selectedColor: null,
   selectedSize: null,
   quickViewQty: 1,
+  currentUser: JSON.parse(localStorage.getItem("lumina_user")) || null,
   orders: JSON.parse(localStorage.getItem("lumina_orders")) || [
     {
       id: "LUM-94821",
@@ -57,6 +58,11 @@ function saveState() {
   localStorage.setItem("lumina_theme", AppState.theme);
   localStorage.setItem("lumina_currency", AppState.currency);
   localStorage.setItem("lumina_orders", JSON.stringify(AppState.orders));
+  if (AppState.currentUser) {
+    localStorage.setItem("lumina_user", JSON.stringify(AppState.currentUser));
+  } else {
+    localStorage.removeItem("lumina_user");
+  }
 }
 
 // Toast Dispatcher
@@ -1301,10 +1307,123 @@ function initScrollReveal() {
 }
 
 // ==========================================
-// 13. Application Bootstrap
+// 13. Authentication System (Login / Gate)
+// ==========================================
+function checkAuthState() {
+  const gateOverlay = document.getElementById("auth-gate-overlay");
+  const userBtn = document.getElementById("user-profile-btn");
+  const displayName = document.getElementById("user-display-name");
+  const avatarInitials = document.getElementById("user-avatar-initials");
+  const dropdownEmail = document.getElementById("user-dropdown-email");
+
+  if (AppState.currentUser) {
+    if (gateOverlay) gateOverlay.classList.add("hidden-gate");
+    if (displayName) displayName.textContent = AppState.currentUser.name.split(" ")[0];
+    if (avatarInitials) avatarInitials.textContent = AppState.currentUser.name.charAt(0).toUpperCase();
+    if (dropdownEmail) dropdownEmail.textContent = AppState.currentUser.email;
+  } else {
+    if (gateOverlay) gateOverlay.classList.remove("hidden-gate");
+    if (displayName) displayName.textContent = "Sign In";
+    if (avatarInitials) avatarInitials.textContent = "U";
+  }
+}
+
+function switchAuthTab(tab) {
+  const loginForm = document.getElementById("login-form");
+  const signupForm = document.getElementById("signup-form");
+  const loginTab = document.getElementById("tab-login-btn");
+  const signupTab = document.getElementById("tab-signup-btn");
+  const subtitle = document.getElementById("auth-subtitle");
+
+  if (tab === "login") {
+    loginForm.style.display = "flex";
+    signupForm.style.display = "none";
+    loginTab.classList.add("active");
+    signupTab.classList.remove("active");
+    if (subtitle) subtitle.textContent = "Welcome back! Please login to continue shopping.";
+  } else {
+    loginForm.style.display = "none";
+    signupForm.style.display = "flex";
+    loginTab.classList.remove("active");
+    signupTab.classList.add("active");
+    if (subtitle) subtitle.textContent = "Join Lumina Club for exclusive access & member discounts.";
+  }
+}
+
+function handleAuthLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById("login-email").value.trim();
+  const name = email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+
+  AppState.currentUser = {
+    name: name || "Member",
+    email: email
+  };
+
+  saveState();
+  checkAuthState();
+  showToast(`Welcome back, <strong>${AppState.currentUser.name}</strong>!`, "success");
+}
+
+function handleAuthSignup(e) {
+  e.preventDefault();
+  const name = document.getElementById("signup-name").value.trim();
+  const email = document.getElementById("signup-email").value.trim();
+
+  AppState.currentUser = {
+    name: name || "New Member",
+    email: email
+  };
+
+  saveState();
+  checkAuthState();
+  showToast(`Account created! Welcome to Lumina, <strong>${name}</strong>.`, "success");
+}
+
+function quickGuestLogin() {
+  AppState.currentUser = {
+    name: "Alex Morgan",
+    email: "alex.morgan@lumina.shop"
+  };
+  saveState();
+  checkAuthState();
+  showToast("Logged in successfully as Demo Guest!", "success");
+}
+
+function handleLogout() {
+  AppState.currentUser = null;
+  saveState();
+  const dropdown = document.getElementById("user-dropdown-menu");
+  if (dropdown) dropdown.classList.remove("show");
+  checkAuthState();
+  showToast("You have been logged out.", "info");
+}
+
+function toggleUserDropdown() {
+  if (!AppState.currentUser) {
+    const gateOverlay = document.getElementById("auth-gate-overlay");
+    if (gateOverlay) gateOverlay.classList.remove("hidden-gate");
+    return;
+  }
+  const dropdown = document.getElementById("user-dropdown-menu");
+  if (dropdown) dropdown.classList.toggle("show");
+}
+
+// Close dropdown on outside click
+window.addEventListener("click", (e) => {
+  const profileContainer = document.getElementById("user-profile-btn");
+  const dropdown = document.getElementById("user-dropdown-menu");
+  if (profileContainer && dropdown && !profileContainer.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.classList.remove("show");
+  }
+});
+
+// ==========================================
+// 14. Application Bootstrap
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
+  checkAuthState();
   renderProducts();
   updateBadges();
   initCountdownTimer();
@@ -1328,15 +1447,39 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll(".modal-overlay.is-open, .drawer-backdrop.is-open").forEach(el => {
         el.classList.remove("is-open");
       });
+      const dropdown = document.getElementById("user-dropdown-menu");
+      if (dropdown) dropdown.classList.remove("show");
     }
   });
 
-  // Mobile menu toggle
+  // Mobile menu toggle & responsive interactions
   const mobileToggle = document.getElementById("mobile-menu-toggle-btn");
   const navMenu = document.getElementById("nav-menu-links");
   if (mobileToggle && navMenu) {
-    mobileToggle.addEventListener("click", () => {
+    mobileToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
       navMenu.classList.toggle("mobile-open");
+    });
+
+    // Auto-close mobile menu on clicking any navigation link
+    navMenu.querySelectorAll(".nav-link").forEach((link) => {
+      link.addEventListener("click", () => {
+        navMenu.classList.remove("mobile-open");
+      });
+    });
+
+    // Auto-close when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!navMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
+        navMenu.classList.remove("mobile-open");
+      }
+    });
+
+    // Clean up open state on window resize to desktop
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 768 && navMenu.classList.contains("mobile-open")) {
+        navMenu.classList.remove("mobile-open");
+      }
     });
   }
 });
