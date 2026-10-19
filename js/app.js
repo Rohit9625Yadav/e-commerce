@@ -391,16 +391,26 @@ function resetFilters() {
 function updateBadges() {
   const cartBadge = document.getElementById("cart-badge-count");
   const wishlistBadge = document.getElementById("wishlist-badge-count");
+  const mobCartBadge = document.getElementById("mob-cart-count");
+  const mobWishlistBadge = document.getElementById("mob-wishlist-count");
 
   const totalCartCount = AppState.cart.reduce((sum, item) => sum + item.quantity, 0);
   if (cartBadge) {
     cartBadge.textContent = totalCartCount;
     cartBadge.style.display = totalCartCount > 0 ? "flex" : "none";
   }
+  if (mobCartBadge) {
+    mobCartBadge.textContent = totalCartCount;
+    mobCartBadge.style.display = totalCartCount > 0 ? "flex" : "none";
+  }
 
   if (wishlistBadge) {
     wishlistBadge.textContent = AppState.wishlist.length;
     wishlistBadge.style.display = AppState.wishlist.length > 0 ? "flex" : "none";
+  }
+  if (mobWishlistBadge) {
+    mobWishlistBadge.textContent = AppState.wishlist.length;
+    mobWishlistBadge.style.display = AppState.wishlist.length > 0 ? "flex" : "none";
   }
 }
 
@@ -644,6 +654,17 @@ function toggleCartDrawer(open) {
   if (drawer) {
     if (open) {
       renderCartDrawer();
+      drawer.classList.add("is-open");
+    } else {
+      drawer.classList.remove("is-open");
+    }
+  }
+}
+
+function toggleMobileDrawer(open) {
+  const drawer = document.getElementById("mobile-nav-backdrop");
+  if (drawer) {
+    if (open) {
       drawer.classList.add("is-open");
     } else {
       drawer.classList.remove("is-open");
@@ -1452,34 +1473,75 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Mobile menu toggle & responsive interactions
+  // Mobile menu drawer toggle & interactions
   const mobileToggle = document.getElementById("mobile-menu-toggle-btn");
-  const navMenu = document.getElementById("nav-menu-links");
-  if (mobileToggle && navMenu) {
+  if (mobileToggle) {
     mobileToggle.addEventListener("click", (e) => {
       e.stopPropagation();
-      navMenu.classList.toggle("mobile-open");
-    });
-
-    // Auto-close mobile menu on clicking any navigation link
-    navMenu.querySelectorAll(".nav-link").forEach((link) => {
-      link.addEventListener("click", () => {
-        navMenu.classList.remove("mobile-open");
-      });
-    });
-
-    // Auto-close when clicking outside
-    document.addEventListener("click", (e) => {
-      if (!navMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
-        navMenu.classList.remove("mobile-open");
-      }
-    });
-
-    // Clean up open state on window resize to desktop
-    window.addEventListener("resize", () => {
-      if (window.innerWidth > 768 && navMenu.classList.contains("mobile-open")) {
-        navMenu.classList.remove("mobile-open");
-      }
+      toggleMobileDrawer(true);
     });
   }
+
+  // ==========================================
+  // Smart Scroll: Auto-hide header on scroll down, instant reveal on scroll up
+  // ==========================================
+  let lastScrollPosition = Math.max(0, window.pageYOffset || document.documentElement.scrollTop);
+  let scrollTicking = false;
+  const SCROLL_DELTA = 3; // Trigger reveal on even slight upward scroll
+
+  function handleSmartHeaderScroll() {
+    const currentScrollY = Math.max(0, window.pageYOffset || document.documentElement.scrollTop);
+    const siteHeader = document.querySelector(".site-header");
+    const bottomNav = document.getElementById("mobile-bottom-nav");
+    
+    // Check if any modal or drawer is currently active
+    const isOverlayOpen = document.querySelector(".modal-overlay.is-open, .drawer-backdrop.is-open");
+
+    if (!siteHeader) {
+      scrollTicking = false;
+      return;
+    }
+
+    // Do not hide when a drawer or modal is active
+    if (isOverlayOpen) {
+      scrollTicking = false;
+      return;
+    }
+
+    // When near the top of the page, always show header
+    if (currentScrollY <= 40) {
+      siteHeader.classList.remove("header-hidden");
+      siteHeader.classList.remove("header-scrolled");
+      if (bottomNav) bottomNav.classList.remove("nav-hidden");
+      lastScrollPosition = currentScrollY;
+      scrollTicking = false;
+      return;
+    }
+
+    // Add scrolled glass styling
+    siteHeader.classList.add("header-scrolled");
+
+    const scrollDifference = currentScrollY - lastScrollPosition;
+
+    // Scrolling DOWN -> Hide menu bar smoothly
+    if (scrollDifference > SCROLL_DELTA && currentScrollY > 70) {
+      siteHeader.classList.add("header-hidden");
+      if (bottomNav) bottomNav.classList.add("nav-hidden");
+    }
+    // Scrolling UP (even slightly!) -> Show menu bar immediately
+    else if (scrollDifference < -SCROLL_DELTA) {
+      siteHeader.classList.remove("header-hidden");
+      if (bottomNav) bottomNav.classList.remove("nav-hidden");
+    }
+
+    lastScrollPosition = currentScrollY;
+    scrollTicking = false;
+  }
+
+  window.addEventListener("scroll", () => {
+    if (!scrollTicking) {
+      window.requestAnimationFrame(handleSmartHeaderScroll);
+      scrollTicking = true;
+    }
+  }, { passive: true });
 });

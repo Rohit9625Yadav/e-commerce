@@ -131,7 +131,7 @@
         </div>
 
         <!-- Mobile Menu Toggle Button -->
-        <button id="mobile-menu-toggle-btn" class="btn-icon mobile-menu-toggle" title="Menu">
+        <button id="mobile-menu-toggle-btn" class="btn-icon mobile-menu-toggle" onclick="toggleMobileDrawer(true)" title="Menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
@@ -488,6 +488,78 @@
        MODALS & DRAWERS
        ========================================== -->
 
+  <!-- Slide-In Mobile Navigation Drawer -->
+  <div id="mobile-nav-backdrop" class="drawer-backdrop" onclick="if(event.target === this) toggleMobileDrawer(false)">
+    <div class="drawer-container mobile-drawer-container">
+      <div class="drawer-header">
+        <a href="#" class="brand-logo" onclick="toggleMobileDrawer(false)" style="font-size: 1.25rem;">
+          <svg viewBox="0 0 24 24" stroke-width="2.5" style="width:26px; height:26px;">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+          <span>NEXORA<span style="color:var(--primary);">.</span></span>
+        </a>
+        <button class="btn-icon" style="width:34px; height:34px;" onclick="toggleMobileDrawer(false)">&times;</button>
+      </div>
+
+      <div class="drawer-body" style="padding: 1.25rem;">
+        <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">
+          Browse Store
+        </div>
+        <div class="mobile-nav-list">
+          <a href="#catalog" class="mobile-nav-item active" onclick="setCategoryFilter('all'); toggleMobileDrawer(false);">
+            <span>🌟 Shop All Products</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+          <a href="#catalog" class="mobile-nav-item" onclick="setCategoryFilter('audio'); toggleMobileDrawer(false);">
+            <span>🎧 Wireless Audio</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+          <a href="#catalog" class="mobile-nav-item" onclick="setCategoryFilter('wearables'); toggleMobileDrawer(false);">
+            <span>⌚ Smart Wearables</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+          <a href="#catalog" class="mobile-nav-item" onclick="setCategoryFilter('fashion'); toggleMobileDrawer(false);">
+            <span>👕 Urban Fashion</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+          <a href="#catalog" class="mobile-nav-item" onclick="setCategoryFilter('home'); toggleMobileDrawer(false);">
+            <span>💡 Smart Home</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+          <a href="#flash-deals" class="mobile-nav-item deals" onclick="toggleMobileDrawer(false);">
+            <span style="color:var(--danger); font-weight:700;">🔥 Flash Deals & Discounts</span>
+            <span class="badge badge-sale" style="font-size:0.65rem;">50% OFF</span>
+          </a>
+        </div>
+
+        <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 1.5rem 0 0.75rem;">
+          Quick Services
+        </div>
+        <div class="mobile-nav-list">
+          <a href="#" class="mobile-nav-item" onclick="openOrderTracker(); toggleMobileDrawer(false); return false;">
+            <span>📦 Track Your Order</span>
+          </a>
+          <a href="#" class="mobile-nav-item" onclick="toggleWishlistDrawer(true); toggleMobileDrawer(false); return false;">
+            <span>❤️ My Wishlist</span>
+          </a>
+          <a href="#" class="mobile-nav-item" onclick="toggleCartDrawer(true); toggleMobileDrawer(false); return false;">
+            <span>🛒 My Shopping Bag</span>
+          </a>
+        </div>
+
+        <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 1.5rem 0 0.75rem;">
+          Preferences
+        </div>
+        <div style="display:flex; flex-direction:column; gap:0.6rem;">
+          <button onclick="toggleTheme()" class="btn btn-secondary btn-sm" style="width:100%; justify-content:space-between;">
+            <span>Theme Mode</span>
+            <span>🌓 Toggle Dark/Light</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Slide-In Cart Drawer -->
   <div id="cart-drawer-backdrop" class="drawer-backdrop" onclick="if(event.target === this) toggleCartDrawer(false)">
     <div class="drawer-container">
@@ -658,6 +730,36 @@
       </div>
     </div>
   </div>
+
+  <!-- Mobile Bottom App Navigation Bar -->
+  <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+    <a href="#" class="mobile-bottom-item active" id="mob-nav-home" onclick="window.scrollTo({top:0, behavior:'smooth'}); return false;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="#catalog" class="mobile-bottom-item" id="mob-nav-catalog" onclick="toggleMobileDrawer(true); return false;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Menu</span>
+    </a>
+    <a href="#flash-deals" class="mobile-bottom-item" id="mob-nav-deals" onclick="document.getElementById('flash-deals').scrollIntoView({behavior:'smooth'}); return false;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+      <span>Deals</span>
+    </a>
+    <a href="#" class="mobile-bottom-item" id="mob-nav-wishlist" onclick="toggleWishlistDrawer(true); return false;">
+      <div style="position:relative; display:inline-flex;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span class="badge-count" id="mob-wishlist-count" style="display:none;">0</span>
+      </div>
+      <span>Saved</span>
+    </a>
+    <a href="#" class="mobile-bottom-item" id="mob-nav-cart" onclick="toggleCartDrawer(true); return false;">
+      <div style="position:relative; display:inline-flex;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-2z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span class="badge-count" id="mob-cart-count" style="display:none;">0</span>
+      </div>
+      <span>Bag</span>
+    </a>
+  </nav>
 
   <!-- Global Floating Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>
