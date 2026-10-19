@@ -1332,21 +1332,42 @@ function initScrollReveal() {
 // ==========================================
 function checkAuthState() {
   const gateOverlay = document.getElementById("auth-gate-overlay");
-  const userBtn = document.getElementById("user-profile-btn");
   const displayName = document.getElementById("user-display-name");
   const avatarInitials = document.getElementById("user-avatar-initials");
   const dropdownEmail = document.getElementById("user-dropdown-email");
 
+  // Keep auth modal hidden by default on refresh
+  if (gateOverlay) {
+    gateOverlay.classList.add("hidden-gate");
+    gateOverlay.classList.remove("is-open", "show-gate");
+    gateOverlay.style.display = "none";
+  }
+
   if (AppState.currentUser) {
-    if (gateOverlay) gateOverlay.classList.add("hidden-gate");
     if (displayName) displayName.textContent = AppState.currentUser.name.split(" ")[0];
     if (avatarInitials) avatarInitials.textContent = AppState.currentUser.name.charAt(0).toUpperCase();
     if (dropdownEmail) dropdownEmail.textContent = AppState.currentUser.email;
   } else {
-    if (gateOverlay) gateOverlay.classList.remove("hidden-gate");
     if (displayName) displayName.textContent = "Sign In";
     if (avatarInitials) avatarInitials.textContent = "U";
   }
+}
+
+function openAuthModal(tab = "login") {
+  const gateOverlay = document.getElementById("auth-gate-overlay");
+  if (!gateOverlay) return;
+  switchAuthTab(tab);
+  gateOverlay.classList.remove("hidden-gate");
+  gateOverlay.classList.add("is-open", "show-gate");
+  gateOverlay.style.display = "flex";
+}
+
+function closeAuthModal() {
+  const gateOverlay = document.getElementById("auth-gate-overlay");
+  if (!gateOverlay) return;
+  gateOverlay.classList.add("hidden-gate");
+  gateOverlay.classList.remove("is-open", "show-gate");
+  gateOverlay.style.display = "none";
 }
 
 function switchAuthTab(tab) {
@@ -1382,6 +1403,7 @@ function handleAuthLogin(e) {
   };
 
   saveState();
+  closeAuthModal();
   checkAuthState();
   showToast(`Welcome back, <strong>${AppState.currentUser.name}</strong>!`, "success");
 }
@@ -1397,6 +1419,7 @@ function handleAuthSignup(e) {
   };
 
   saveState();
+  closeAuthModal();
   checkAuthState();
   showToast(`Account created! Welcome to Lumina, <strong>${name}</strong>.`, "success");
 }
@@ -1407,6 +1430,7 @@ function quickGuestLogin() {
     email: "alex.morgan@lumina.shop"
   };
   saveState();
+  closeAuthModal();
   checkAuthState();
   showToast("Logged in successfully as Demo Guest!", "success");
 }
@@ -1422,8 +1446,7 @@ function handleLogout() {
 
 function toggleUserDropdown() {
   if (!AppState.currentUser) {
-    const gateOverlay = document.getElementById("auth-gate-overlay");
-    if (gateOverlay) gateOverlay.classList.remove("hidden-gate");
+    openAuthModal("login");
     return;
   }
   const dropdown = document.getElementById("user-dropdown-menu");

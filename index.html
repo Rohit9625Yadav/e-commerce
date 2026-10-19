@@ -670,8 +670,9 @@
   <!-- ==========================================
        AUTHENTICATION GATE (Login / Signup to enter)
        ========================================== -->
-  <div id="auth-gate-overlay" class="auth-gate-overlay">
+  <div id="auth-gate-overlay" class="auth-gate-overlay hidden-gate" style="display: none;" onclick="if(event.target === this) closeAuthModal()">
     <div class="auth-card">
+      <button class="modal-close-btn" onclick="closeAuthModal()" title="Close">&times;</button>
       <div class="auth-brand-header">
         <a href="#" class="brand-logo">
           <svg viewBox="0 0 24 24" stroke-width="2.5" style="width: 32px; height: 32px;">
